@@ -40,3 +40,14 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+integers.txt
+floats.txt
+strings.txt
+
+resultintegers.txt
+resultstrings.txt
+resultfloats.txt
+
+file1.txt
+file2.txt

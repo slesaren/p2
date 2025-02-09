@@ -43,9 +43,79 @@ public class Main {
         }
     }
 
+    // Метод для краткой статистики
+    public static void printShortStatistics(List<Integer> integers, List<Double> doubles, List<String> strings) {
+        System.out.println("Краткая статистика:");
+        System.out.println("Целые числа: " + integers.size() + " элементов");
+        System.out.println("Дробные числа: " + doubles.size() + " элементов");
+        System.out.println("Строки: " + strings.size() + " элементов");
+    }
+
+    // Метод для полной статистики
+    public static void printFullStatistics(List<Integer> integers, List<Double> doubles, List<String> strings) {
+        System.out.println("Полная статистика:");
+
+        // Статистика для целых чисел
+        if (!integers.isEmpty()) {
+            int minInt = integers.stream().min(Integer::compare).get();
+            int maxInt = integers.stream().max(Integer::compare).get();
+            int sumInt = integers.stream().mapToInt(Integer::intValue).sum();
+            double avgInt = integers.stream().mapToInt(Integer::intValue).average().orElse(0);
+
+            System.out.println("Целые числа:");
+            System.out.println("  Количество: " + integers.size());
+            System.out.println("  Минимальное: " + minInt);
+            System.out.println("  Максимальное: " + maxInt);
+            System.out.println("  Сумма: " + sumInt);
+            System.out.println("  Среднее: " + avgInt);
+        } else {
+            System.out.println("Целые числа: нет данных");
+        }
+
+        // Статистика для дробных чисел
+        if (!doubles.isEmpty()) {
+            double minDouble = doubles.stream().min(Double::compare).get();
+            double maxDouble = doubles.stream().max(Double::compare).get();
+            double sumDouble = doubles.stream().mapToDouble(Double::doubleValue).sum();
+            double avgDouble = doubles.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+
+            System.out.println("Дробные числа:");
+            System.out.println("  Количество: " + doubles.size());
+            System.out.println("  Минимальное: " + minDouble);
+            System.out.println("  Максимальное: " + maxDouble);
+            System.out.println("  Сумма: " + sumDouble);
+            System.out.println("  Среднее: " + avgDouble);
+        } else {
+            System.out.println("Дробные числа: нет данных");
+        }
+
+        // Статистика для строк
+        if (!strings.isEmpty()) {
+            int minLength = strings.stream().mapToInt(String::length).min().orElse(0);
+            int maxLength = strings.stream().mapToInt(String::length).max().orElse(0);
+
+            System.out.println("Строки:");
+            System.out.println("  Количество: " + strings.size());
+            System.out.println("  Самая короткая строка: " + minLength + " символов");
+            System.out.println("  Самая длинная строка: " + maxLength + " символов");
+        } else {
+            System.out.println("Строки: нет данных");
+        }
+    }
+
     public static void main(String[] args) {
+
+        try {
+            System.setOut(new PrintStream(System.out, true, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
         String outputPath = "";
         String prefix = "";
+        boolean shortStats = false; // Флаг для краткой статистики
+        boolean fullStats = false;  // Флаг для полной статистики
 
         // Парсинг аргументов командной строки
         for (int i = 0; i < args.length; i++) {
@@ -55,9 +125,12 @@ public class Main {
             } else if (args[i].equals("-p") && i + 1 < args.length) {
                 prefix = args[i + 1];
                 i++;
+            } else if (args[i].equals("-s")) {
+                shortStats = true;
+            } else if (args[i].equals("-f")) {
+                fullStats = true;
             }
         }
-
 
         if (outputPath.isEmpty()) {
             outputPath = ".";
@@ -95,10 +168,18 @@ public class Main {
         writeToFile(doublesFile, doubles);
         writeToFile(stringsFile, strings);
 
+        // Вывод статистики
+        if (shortStats) {
+            printShortStatistics(integers, doubles, strings);
+        } else if (fullStats) {
+            printFullStatistics(integers, doubles, strings);
+        } else {
+            System.out.println("Статистика не запрошена. Используйте -s для краткой или -f для полной статистики.");
+        }
+
         scanner.close();
     }
 }
-
 
 
 

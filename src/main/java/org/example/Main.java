@@ -5,11 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-
-
 public class Main {
     public static void processLine(String line, List<Integer> integers, List<Double> doubles, List<String> strings) {
         if (line == null || line.isEmpty()) return;
@@ -30,7 +25,13 @@ public class Main {
             return;
         }
 
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+        File file = new File(fileName);
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
             for (T item : data) {
                 bw.write(item.toString());
                 bw.newLine();
@@ -43,15 +44,24 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        String outputPath = "";
+        String prefix = "";
 
-        try {
-            OutputStream out = System.out;
-            PrintStream ps = new PrintStream(out, true, StandardCharsets.UTF_8);
-            System.setOut(ps);
-        } catch (Exception e) {
-            e.printStackTrace();
+        // Парсинг аргументов командной строки
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-o") && i + 1 < args.length) {
+                outputPath = args[i + 1];
+                i++;
+            } else if (args[i].equals("-p") && i + 1 < args.length) {
+                prefix = args[i + 1];
+                i++;
+            }
         }
 
+
+        if (outputPath.isEmpty()) {
+            outputPath = ".";
+        }
 
         List<Integer> integers = new ArrayList<>();
         List<Double> doubles = new ArrayList<>();
@@ -77,14 +87,18 @@ public class Main {
             }
         }
 
+        String integersFile = outputPath + File.separator + prefix + "integers.txt";
+        String doublesFile = outputPath + File.separator + prefix + "floats.txt";
+        String stringsFile = outputPath + File.separator + prefix + "strings.txt";
 
-        writeToFile("integers.txt", integers);
-        writeToFile("floats.txt", doubles);
-        writeToFile("strings.txt", strings);
+        writeToFile(integersFile, integers);
+        writeToFile(doublesFile, doubles);
+        writeToFile(stringsFile, strings);
 
         scanner.close();
     }
 }
+
 
 
 

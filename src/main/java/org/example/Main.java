@@ -28,7 +28,10 @@ public class Main {
         File file = new File(fileName);
         File parentDir = file.getParentFile();
         if (parentDir != null && !parentDir.exists()) {
-            parentDir.mkdirs();
+            if (!parentDir.mkdirs()) {
+                System.out.println("Не удалось создать директорию: " + parentDir);
+                return;
+            }
         }
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
@@ -43,7 +46,6 @@ public class Main {
         }
     }
 
-    // Метод для краткой статистики
     public static void printShortStatistics(List<Integer> integers, List<Double> doubles, List<String> strings) {
         System.out.println("Краткая статистика:");
         System.out.println("Целые числа: " + integers.size() + " элементов");
@@ -51,14 +53,12 @@ public class Main {
         System.out.println("Строки: " + strings.size() + " элементов");
     }
 
-    // Метод для полной статистики
     public static void printFullStatistics(List<Integer> integers, List<Double> doubles, List<String> strings) {
         System.out.println("Полная статистика:");
 
-        // Статистика для целых чисел
         if (!integers.isEmpty()) {
-            int minInt = integers.stream().min(Integer::compare).get();
-            int maxInt = integers.stream().max(Integer::compare).get();
+            int minInt = integers.stream().min(Integer::compare).orElse(0);
+            int maxInt = integers.stream().max(Integer::compare).orElse(0);
             int sumInt = integers.stream().mapToInt(Integer::intValue).sum();
             double avgInt = integers.stream().mapToInt(Integer::intValue).average().orElse(0);
 
@@ -72,10 +72,9 @@ public class Main {
             System.out.println("Целые числа: нет данных");
         }
 
-        // Статистика для дробных чисел
         if (!doubles.isEmpty()) {
-            double minDouble = doubles.stream().min(Double::compare).get();
-            double maxDouble = doubles.stream().max(Double::compare).get();
+            double minDouble = doubles.stream().min(Double::compare).orElse(0.0);
+            double maxDouble = doubles.stream().max(Double::compare).orElse(0.0);
             double sumDouble = doubles.stream().mapToDouble(Double::doubleValue).sum();
             double avgDouble = doubles.stream().mapToDouble(Double::doubleValue).average().orElse(0);
 
@@ -89,7 +88,6 @@ public class Main {
             System.out.println("Дробные числа: нет данных");
         }
 
-        // Статистика для строк
         if (!strings.isEmpty()) {
             int minLength = strings.stream().mapToInt(String::length).min().orElse(0);
             int maxLength = strings.stream().mapToInt(String::length).max().orElse(0);
@@ -104,20 +102,17 @@ public class Main {
     }
 
     public static void main(String[] args) {
-
         try {
             System.setOut(new PrintStream(System.out, true, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            System.err.println("Ошибка настройки кодировки вывода: " + e.getMessage());
         }
 
 
         String outputPath = "";
         String prefix = "";
-        boolean shortStats = false; // Флаг для краткой статистики
-        boolean fullStats = false;  // Флаг для полной статистики
-
-        // Парсинг аргументов командной строки
+        boolean shortStats = false;
+        boolean fullStats = false;
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-o") && i + 1 < args.length) {
                 outputPath = args[i + 1];
@@ -129,6 +124,8 @@ public class Main {
                 shortStats = true;
             } else if (args[i].equals("-f")) {
                 fullStats = true;
+            } else {
+                System.out.println("Неизвестный аргумент: " + args[i]);
             }
         }
 
@@ -154,8 +151,10 @@ public class Main {
                 while ((line = br.readLine()) != null) {
                     processLine(line.trim(), integers, doubles, strings);
                 }
+            } catch (FileNotFoundException e) {
+                System.out.println("Файл не найден: " + fileName);
             } catch (IOException e) {
-                System.err.println("Ошибка при чтении файла: " + fileName);
+                System.out.println("Ошибка при чтении файла: " + fileName);
                 e.printStackTrace();
             }
         }
@@ -168,13 +167,10 @@ public class Main {
         writeToFile(doublesFile, doubles);
         writeToFile(stringsFile, strings);
 
-        // Вывод статистики
         if (shortStats) {
             printShortStatistics(integers, doubles, strings);
         } else if (fullStats) {
             printFullStatistics(integers, doubles, strings);
-        } else {
-            System.out.println("Статистика не запрошена. Используйте -s для краткой или -f для полной статистики.");
         }
 
         scanner.close();
